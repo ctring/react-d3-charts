@@ -83,15 +83,11 @@ d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
   pathGroup.attr('transform', this._translate());
 
   var paths = pathGroup.selectAll('path').data(series);
-  // update
-  paths.attr('d', function(d) { console.log(d); return lineFunc(d.data); })
-       .attr('stroke', function(d) { return d.color || 'black'; })
-       .attr('stroke-width', 1)
-       .attr('fill', 'none');
-
-  // enter
+  
+  // enter + update
   paths.enter()
        .append('path')
+       .merge(paths)
        .attr('d', function(d) { return lineFunc(d.data); })
        .attr('stroke', function(d) { return d.color || 'black'; })
        .attr('stroke-width', 1)
@@ -115,17 +111,11 @@ d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
   pointsSeries.selectAll('circle')
               .remove();
 
-  pointsSeries.selectAll('circle')
-              .data(function(d) { return d.data; })
-              .enter()
-              .append('circle')
-              .attr('cx', function(d, i) { return scales.x(i); })
-              .attr('cy', function(d) { return scales.y(d); })
-              .attr('r', 3);
-
+  // enter + update
   pointsSeries.enter()
               .append('g')
               .attr('class', 'points')
+              .merge(pointsSeries)
               .selectAll('circle')
                 .data(function(d) { return d.data; })
                 .enter()
@@ -134,6 +124,7 @@ d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
                 .attr('cy', function(d) { return scales.y(d); })
                 .attr('r', 3);
 
+  // exit
   pointsSeries.exit().remove();
 }
 
@@ -148,16 +139,10 @@ d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
 
   var lines = warpingPathGroup.selectAll('line').data(warpingPathData);
 
-  lines.attr('x1', function(d) { return scales.x(d[0]); })
-       .attr('y1', function(d) { return scales.y(series[0].data[d[0]]); })
-       .attr('x2', function(d) { return scales.x(d[1]); })
-       .attr('y2', function(d) { return scales.y(series[1].data[d[1]]); })
-       .attr('stroke-width', 1)
-       .attr('stroke', 'gray')
-       .attr('stroke-dasharray', '5, 5');
-
+  // enter + update
   lines.enter()
        .append('line')
+       .merge(lines)
        .attr('x1', function(d) { return scales.x(d[0]); })
        .attr('y1', function(d) { return scales.y(series[0].data[d[0]]); })
        .attr('x2', function(d) { return scales.x(d[1]); })
@@ -166,6 +151,7 @@ d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
        .attr('stroke', 'gray')
        .attr('stroke-dasharray', '5, 5');
 
+  // exit
   lines.exit().remove();
 }
 
