@@ -22,13 +22,13 @@ d3MultiTimeSeriesChart.update = function(el, state) {
   var series = state.data['series'] || [];
 
   var domains = { 
-    x: [0, Math.max.apply(null, series.map(function(s) {return s.length}))],
-    y: [0, Math.max.apply(null, series.map(function(s) {return Math.max.apply(null, s);}))]
+    x: [0, Math.max.apply(null, series.map(function(s) {return s.data.length}))],
+    y: [0, Math.max.apply(null, series.map(function(s) {return Math.max.apply(null, s.data);}))]
   };
 
   this._drawAxis(svg, domains);
-  this._drawLines(svg, domains, state.date);
-  this._drawPoints(svg, domains, state.date);
+  this._drawLines(svg, domains, state.data);
+  this._drawPoints(svg, domains, state.data);
   this._drawWarpingPath(svg, domains, state.data);
 };
 
@@ -72,7 +72,7 @@ d3MultiTimeSeriesChart._translate = function() {
 
 d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
   var scales = this._scales(domains);
-  var series = data['series'];
+  var series = data.series;
   var lineFunc = d3.line()
                    .x(function(d, i) { return scales.x(i); })
                    .y(function(d) { return scales.y(d); })
@@ -84,16 +84,16 @@ d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
 
   var paths = pathGroup.selectAll('path').data(series);
   // update
-  paths.attr('d', function(d) { return lineFunc(d); })
-       .attr('stroke', 'blue')
+  paths.attr('d', function(d) { console.log(d); return lineFunc(d.data); })
+       .attr('stroke', function(d) { return d.color || 'black'; })
        .attr('stroke-width', 1)
        .attr('fill', 'none');
 
   // enter
   paths.enter()
        .append('path')
-       .attr('d', function(d) { return lineFunc(d); })
-       .attr('stroke', 'blue')
+       .attr('d', function(d) { return lineFunc(d.data); })
+       .attr('stroke', function(d) { return d.color || 'black'; })
        .attr('stroke-width', 1)
        .attr('fill', 'none')
        
@@ -116,7 +116,7 @@ d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
               .remove();
 
   pointsSeries.selectAll('circle')
-              .data(function(d) { return d; })
+              .data(function(d) { return d.data; })
               .enter()
               .append('circle')
               .attr('cx', function(d, i) { return scales.x(i); })
@@ -127,7 +127,7 @@ d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
               .append('g')
               .attr('class', 'points')
               .selectAll('circle')
-                .data(function(d) { return d; })
+                .data(function(d) { return d.data; })
                 .enter()
                 .append('circle')
                 .attr('cx', function(d, i) { return scales.x(i); })
@@ -149,21 +149,21 @@ d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
   var lines = warpingPathGroup.selectAll('line').data(warpingPathData);
 
   lines.attr('x1', function(d) { return scales.x(d[0]); })
-       .attr('y1', function(d) { return scales.y(series[0][d[0]]); })
+       .attr('y1', function(d) { return scales.y(series[0].data[d[0]]); })
        .attr('x2', function(d) { return scales.x(d[1]); })
-       .attr('y2', function(d) { return scales.y(series[1][d[1]]); })
+       .attr('y2', function(d) { return scales.y(series[1].data[d[1]]); })
        .attr('stroke-width', 1)
-       .attr('stroke', 'red')
+       .attr('stroke', 'gray')
        .attr('stroke-dasharray', '5, 5');
 
   lines.enter()
        .append('line')
        .attr('x1', function(d) { return scales.x(d[0]); })
-       .attr('y1', function(d) { return scales.y(series[0][d[0]]); })
+       .attr('y1', function(d) { return scales.y(series[0].data[d[0]]); })
        .attr('x2', function(d) { return scales.x(d[1]); })
-       .attr('y2', function(d) { return scales.y(series[1][d[1]]); })
+       .attr('y2', function(d) { return scales.y(series[1].data[d[1]]); })
        .attr('stroke-width', 1)
-       .attr('stroke', 'red')
+       .attr('stroke', 'gray')
        .attr('stroke-dasharray', '5, 5');
 
   lines.exit().remove();
