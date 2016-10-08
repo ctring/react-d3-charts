@@ -16,12 +16,15 @@ var sampleData = [{
            { data: [3, 6, 3, 9, 3, 7, 8, 9, 10, 11, 10, 10, 7, 5, 4, 3, 2, 1, 0]}],
 
   warpingPath: [[11, 18], [10, 17], [9, 16], [8, 15], [7, 14], [6, 13], [5, 12], [4, 11], [3, 10], [2, 9], [1, 8], [1, 7], [1, 6], [1, 5], [1, 4], [1, 3], [1, 2], [1, 1], [0, 0]]
+},
+{
+  series: [{ data: [1, 2 ,3, 4], color: 'red'}]
 }];
 
 var App = React.createClass({
   getInitialState: function() {
     return {
-      data: sampleData[0],
+      data: sampleData[2],
       current: 0,
       show: true
     };
