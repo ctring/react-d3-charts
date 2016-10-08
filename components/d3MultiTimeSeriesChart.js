@@ -27,8 +27,8 @@ d3MultiTimeSeriesChart.update = function(el, state) {
   };
 
   this._drawAxis(svg, domains);
-  this._drawLines(svg, domains, series);
-  this._drawPoints(svg, domains, series);
+  this._drawLines(svg, domains, state.date);
+  this._drawPoints(svg, domains, state.date);
   this._drawWarpingPath(svg, domains, state.data);
 };
 
@@ -72,6 +72,7 @@ d3MultiTimeSeriesChart._translate = function() {
 
 d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
   var scales = this._scales(domains);
+  var series = data['series'];
   var lineFunc = d3.line()
                    .x(function(d, i) { return scales.x(i); })
                    .y(function(d) { return scales.y(d); })
@@ -81,7 +82,7 @@ d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
 
   pathGroup.attr('transform', this._translate());
 
-  var paths = pathGroup.selectAll('path').data(data);
+  var paths = pathGroup.selectAll('path').data(series);
   // update
   paths.attr('d', function(d) { return lineFunc(d); })
        .attr('stroke', 'blue')
@@ -103,11 +104,12 @@ d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
 
 d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
   var scales = this._scales(domains);
+  var series = data['series'];
   var pointGroup = svg.select('g#points');
 
   pointGroup.attr('transform', this._translate());
 
-  var pointsSeries = pointGroup.selectAll('g').data(data);
+  var pointsSeries = pointGroup.selectAll('g').data(series);
 
   // clean all previous points
   pointsSeries.selectAll('circle')
