@@ -1,5 +1,7 @@
 var d3 = require('d3');
-var d3MultiTimeSeriesChart = {};
+var d3MultiTimeSeriesChart = {
+  _pointRadius: 3
+};
 
 d3MultiTimeSeriesChart.create = function(el, props, state) {
 
@@ -30,6 +32,7 @@ d3MultiTimeSeriesChart.update = function(el, state) {
   this._drawLines(svg, domains, state.data);
   this._drawPoints(svg, domains, state.data);
   this._drawWarpingPath(svg, domains, state.data);
+  this._drawVoronoi(svg, domains, state.data);
 };
 
 d3MultiTimeSeriesChart.destroy = function(el) {
@@ -70,6 +73,13 @@ d3MultiTimeSeriesChart._translate = function() {
   return 'translate(' + this.props.margin.left + ',' + this.props.margin.top + ')';
 };
 
+d3MultiTimeSeriesChart._extractRawPointCoords = function(series) {
+  var attachIndex = function(d, i) { return [i, d]; }
+  var flatten = series.map(function(s) { return s.data.map(attachIndex); })
+                      .reduce(function(prev, cur) { return prev.concat(cur); }, []);
+  return flatten;
+};
+
 d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
   var scales = this._scales(domains);
   var series = data.series;
@@ -100,33 +110,28 @@ d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
 
 d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
   var scales = this._scales(domains);
-  var series = data['series'];
-  var pointGroup = svg.select('g#points');
+  var points = this._extractRawPointCoords(data['series']);
 
+  var pointGroup = svg.select('g#points');
   pointGroup.attr('transform', this._translate());
 
-  var pointsSeries = pointGroup.selectAll('g').data(series);
-
-  // clean all previous points
-  pointsSeries.selectAll('circle')
-              .remove();
+  var circles = pointGroup.selectAll('circle').data(points);
 
   // enter + update
-  pointsSeries.enter()
-              .append('g')
-              .attr('class', 'points')
-              .merge(pointsSeries)
-              .selectAll('circle')
-                .data(function(d) { return d.data; })
-                .enter()
-                .append('circle')
-                .attr('cx', function(d, i) { return scales.x(i); })
-                .attr('cy', function(d) { return scales.y(d); })
-                .attr('r', 3);
+  circles.enter()
+         .append('circle')
+         .merge(circles)
+         .attr('cx', function(d) { return scales.x(d[0]); })
+         .attr('cy', function(d) { return scales.y(d[1]); })
+         .attr('r', this._pointRadius);
 
   // exit
-  pointsSeries.exit().remove();
-}
+  circles.exit().remove();
+};
+
+// d3MultiTimeSeriesChart._handleMouseOverPoint = function(d, i) {
+//   d3.select(this).attr('fill', 'orange');
+// };
 
 d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
   var scales = this._scales(domains);
@@ -153,6 +158,12 @@ d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
 
   // exit
   lines.exit().remove();
+}
+
+
+d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
+  var scales = this._scales(domains);
+
 }
 
 module.exports = d3MultiTimeSeriesChart;
