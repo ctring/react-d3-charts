@@ -9,11 +9,12 @@ d3MultiTimeSeriesChart.create = function(el, props, state) {
               .attr('width', props.width + props.margin.left + props.margin.right)
               .attr('height', props.height + props.margin.top + props.margin.bottom);
 
-  svg.append('g').attr('id', 'xaxis');
-  svg.append('g').attr('id', 'yaxis');
-  svg.append('g').attr('id', 'lines');
-  svg.append('g').attr('id', 'warpingPath');
-  svg.append('g').attr('id', 'points');
+  svg.append('g').attr('class', 'xaxisWrapper');
+  svg.append('g').attr('class', 'yaxisWrapper');
+  svg.append('g').attr('class', 'linesWrapper');
+  svg.append('g').attr('class', 'warpingPathWrapper');
+  svg.append('g').attr('class', 'pointsWrapper');
+  svg.append('g').attr('class', 'voronoiWrapper')
 
   this.props = props;
   this.update(el, state);
@@ -54,19 +55,19 @@ d3MultiTimeSeriesChart._scales = function(domains) {
 
 d3MultiTimeSeriesChart._drawAxis = function(svg, domains) {
   var scales = this._scales(domains);
-  var yAxis = d3.axisLeft(scales.y);
-  var xAxis = d3.axisBottom(scales.x).ticks(domains.x[1]).tickFormat(d3.format('d'));
+  var yaxisWrapper = d3.axisLeft(scales.y);
+  var xaxisWrapper = d3.axisBottom(scales.x).ticks(domains.x[1]).tickFormat(d3.format('d'));
   var width = this.props.width;
   var height = this.props.height;
   var margin = this.props.margin;
 
-  svg.select('g#xaxis')
+  svg.select('g.xaxisWrapper')
      .attr('transform', 'translate(' + margin.left + ', ' + (height + margin.top) + ')')
-     .call(xAxis);
+     .call(xaxisWrapper);
 
-  svg.select('g#yaxis')
+  svg.select('g.yaxisWrapper')
      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-     .call(yAxis);
+     .call(yaxisWrapper);
 }
 
 d3MultiTimeSeriesChart._translate = function() {
@@ -88,7 +89,7 @@ d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
                    .y(function(d) { return scales.y(d); })
                    .curve(d3.curveLinear);
 
-  var pathGroup = svg.select('g#lines');
+  var pathGroup = svg.select('g.linesWrapper');
 
   pathGroup.attr('transform', this._translate());
 
@@ -112,7 +113,7 @@ d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
   var scales = this._scales(domains);
   var points = this._extractRawPointCoords(data['series']);
 
-  var pointGroup = svg.select('g#points');
+  var pointGroup = svg.select('g.pointsWrapper');
   pointGroup.attr('transform', this._translate());
 
   var circles = pointGroup.selectAll('circle').data(points);
@@ -138,7 +139,7 @@ d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
 
   var series = data['series'];
   var warpingPathData = data['warpingPath'] || [];
-  var warpingPathGroup = svg.select('g#warpingPath');
+  var warpingPathGroup = svg.select('g.warpingPathWrapper');
 
   warpingPathGroup.attr('transform', this._translate());
 
@@ -163,6 +164,8 @@ d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
 
 d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
   var scales = this._scales(domains);
+  var points = this._extractRawPointCoords(data['series']);
+  var voronoiGroup = svg.select('g.voronoiWrapper');
 
 }
 
