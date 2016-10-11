@@ -24,7 +24,7 @@ var sampleData = [{
 var App = React.createClass({
   getInitialState: function() {
     return {
-      data: sampleData[2],
+      data: sampleData[0],
       current: 0,
       show: true
     };

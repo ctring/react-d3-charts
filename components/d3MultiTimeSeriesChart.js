@@ -77,7 +77,9 @@ d3MultiTimeSeriesChart._translate = function() {
 d3MultiTimeSeriesChart._extractRawPointCoords = function(series) {
   var attachIndex = function(d, i) { return [i, d]; }
   var flatten = series.map(function(s) { return s.data.map(attachIndex); })
-                      .reduce(function(prev, cur) { return prev.concat(cur); }, []);
+                      .reduce(function(prev, cur) { 
+                        return prev.concat(cur); 
+                      }, []);
   return flatten;
 };
 
@@ -161,12 +163,32 @@ d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
   lines.exit().remove();
 }
 
-
 d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
   var scales = this._scales(domains);
+  // TODO: handle the case of duplicated points 
   var points = this._extractRawPointCoords(data['series']);
-  var voronoiGroup = svg.select('g.voronoiWrapper');
+  var width = this.props.width;
+  var height = this.props.height;
+  var voronoi = d3.voronoi()
+                  .x(function(d) { return scales.x(d[0]); })
+                  .y(function(d) { return scales.y(d[1]); })
+                  .extent([[0, 0], [width, height]]);
 
+  var voronoiGroup = svg.select('g.voronoiWrapper')
+  voronoiGroup.attr('transform', this._translate());                    
+  
+  var voronoiPaths = voronoiGroup.selectAll('path').data(voronoi(points).polygons());
+  voronoiPaths.enter()
+              .append('path')
+              .merge(voronoiPaths)
+              .attr('d', function(d, i) { 
+                return 'M' + d.join('L') + 'Z'; 
+              })
+              .datum(function(d, i) { return d.point; })
+              .style('stroke', '#2074A0')
+              .style('fill', 'none')
+
+  voronoiPaths.exit().remove();
 }
 
 module.exports = d3MultiTimeSeriesChart;
