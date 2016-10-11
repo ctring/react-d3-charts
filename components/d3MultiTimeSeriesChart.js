@@ -1,22 +1,45 @@
 var d3 = require('d3');
 var d3MultiTimeSeriesChart = {
-  _pointRadius: 3
+  _pointRadius: 3,
+  _tooltipWidth: 50,
+  _tooltipHeight: 30
 };
 
 d3MultiTimeSeriesChart.create = function(el, props, state) {
+  this.props = props;
+
+  var width = props.width;
+  var height = props.height;
+  var margin = props.margin;
 
   var svg = d3.select(el).append('svg')
-              .attr('width', props.width + props.margin.left + props.margin.right)
-              .attr('height', props.height + props.margin.top + props.margin.bottom);
+              .attr('width', width + margin.left + margin.right)
+              .attr('height', height + margin.top + margin.bottom);
 
-  svg.append('g').attr('class', 'xaxisWrapper');
-  svg.append('g').attr('class', 'yaxisWrapper');
-  svg.append('g').attr('class', 'linesWrapper');
-  svg.append('g').attr('class', 'warpingPathWrapper');
-  svg.append('g').attr('class', 'pointsWrapper');
-  svg.append('g').attr('class', 'voronoiWrapper')
+  svg.append('g').attr('class', 'xaxisWrapper')
+     .attr('transform', 'translate(' + margin.left + ', ' + (height + margin.top) + ')')
+  svg.append('g').attr('class', 'yaxisWrapper')
+     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+  svg.append('g').attr('class', 'linesWrapper').attr('transform', this._translate());
+  svg.append('g').attr('class', 'warpingPathWrapper').attr('transform', this._translate());
+  svg.append('g').attr('class', 'pointsWrapper').attr('transform', this._translate());
+  svg.append('g').attr('class', 'voronoiWrapper').attr('transform', this._translate());
+  var tooltipWrapper = svg.append('g').attr('class', 'tooltipWrapper').attr('transform', this._translate())
+  tooltipWrapper.style('opacity', 0)
+  tooltipWrapper.append('rect')
+                .attr('id', 'tooltip')
+                .attr('fill', 'lightsteelblue')
+                .attr('rx', 5)
+                .attr('ry', 5)
+                .style('pointer-events', 'none');
+  tooltipWrapper.append('text')
+                .attr('id', 'tooltipText')
+                .attr('font-size', '12px')
+                .attr('font-weight', 'bold')
+                .style('pointer-events', 'none')
+                .style('font-family', 'sans-serif')
+                .style('text-anchor', 'middle');
 
-  this.props = props;
   this.update(el, state);
 };
 
@@ -57,16 +80,12 @@ d3MultiTimeSeriesChart._drawAxis = function(svg, domains) {
   var scales = this._scales(domains);
   var yaxisWrapper = d3.axisLeft(scales.y);
   var xaxisWrapper = d3.axisBottom(scales.x).ticks(domains.x[1]).tickFormat(d3.format('d'));
-  var width = this.props.width;
-  var height = this.props.height;
-  var margin = this.props.margin;
+
 
   svg.select('g.xaxisWrapper')
-     .attr('transform', 'translate(' + margin.left + ', ' + (height + margin.top) + ')')
      .call(xaxisWrapper);
 
   svg.select('g.yaxisWrapper')
-     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
      .call(yaxisWrapper);
 }
 
@@ -114,10 +133,7 @@ d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
 d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
   var scales = this._scales(domains);
   var points = this._extractRawPointCoords(data['series']);
-
   var pointGroup = svg.select('g.pointsWrapper');
-  pointGroup.attr('transform', this._translate());
-
   var circles = pointGroup.selectAll('circle').data(points);
 
   // enter + update
@@ -139,13 +155,9 @@ d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
 
 d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
   var scales = this._scales(domains);
-
   var series = data['series'];
   var warpingPathData = data['warpingPath'] || [];
   var warpingPathGroup = svg.select('g.warpingPathWrapper');
-
-  warpingPathGroup.attr('transform', this._translate());
-
   var lines = warpingPathGroup.selectAll('line').data(warpingPathData);
 
   // enter + update
@@ -175,8 +187,7 @@ d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
                   .y(function(d) { return scales.y(d[1]); })
                   .extent([[0, 0], [width, height]]);
 
-  var voronoiGroup = svg.select('g.voronoiWrapper')
-  voronoiGroup.attr('transform', this._translate());                    
+  var voronoiGroup = svg.select('g.voronoiWrapper')             
   
   var polygons = voronoi(points).polygons();
 
@@ -187,20 +198,43 @@ d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
               .attr('d', function(d, i) { 
                 return 'M' + d.join('L') + 'Z'; 
               })
-              .datum(function(d, i) { return d.point; })
               .style('stroke', 'none')
               .style('fill', 'none')
               .style('pointer-events', 'all')
               .on('mouseover', function(d, i) {
                 d3.select('circle.circle_' + i)
                   .attr('fill', 'orange');
+                d3MultiTimeSeriesChart._showToolTip(svg, scales.x(d.data[0]), scales.y(d.data[1]), d.data[1]);
               })
               .on('mouseout', function(d, i) {
                 d3.select('circle.circle_' + i)
                   .attr('fill', 'black');
+                d3MultiTimeSeriesChart._removeToolTip(svg);
               });
 
   voronoiPaths.exit().remove();
+}
+
+d3MultiTimeSeriesChart._showToolTip = function(svg, x, y, text) {
+  var tooltipWrapper = svg.select('g.tooltipWrapper');
+  var tooltip = tooltipWrapper.select('rect#tooltip');
+  var tooltipText = tooltipWrapper.select('text#tooltipText');
+  
+  tooltip.attr('x', x - this._tooltipWidth / 2)
+         .attr('y', y + this._pointRadius)
+         .attr('width', this._tooltipWidth)
+         .attr('height', this._tooltipHeight);
+
+  tooltipText.attr('x', x)
+             .attr('y', y + this._pointRadius + this._tooltipHeight / 2)
+             .text(text);
+
+  tooltipWrapper.transition()
+                .style('opacity', 0.8);
+}
+
+d3MultiTimeSeriesChart._removeToolTip = function(svg) {
+  svg.select('g.tooltipWrapper').transition().style('opacity', 0);
 }
 
 module.exports = d3MultiTimeSeriesChart;
