@@ -126,7 +126,8 @@ d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
          .merge(circles)
          .attr('cx', function(d) { return scales.x(d[0]); })
          .attr('cy', function(d) { return scales.y(d[1]); })
-         .attr('r', this._pointRadius);
+         .attr('r', this._pointRadius)
+         .attr('class', function(d, i) { return 'circle_' + i; });
 
   // exit
   circles.exit().remove();
@@ -177,7 +178,9 @@ d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
   var voronoiGroup = svg.select('g.voronoiWrapper')
   voronoiGroup.attr('transform', this._translate());                    
   
-  var voronoiPaths = voronoiGroup.selectAll('path').data(voronoi(points).polygons());
+  var polygons = voronoi(points).polygons();
+
+  var voronoiPaths = voronoiGroup.selectAll('path').data(polygons);
   voronoiPaths.enter()
               .append('path')
               .merge(voronoiPaths)
@@ -185,8 +188,17 @@ d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
                 return 'M' + d.join('L') + 'Z'; 
               })
               .datum(function(d, i) { return d.point; })
-              .style('stroke', '#2074A0')
+              .style('stroke', 'none')
               .style('fill', 'none')
+              .style('pointer-events', 'all')
+              .on('mouseover', function(d, i) {
+                d3.select('circle.circle_' + i)
+                  .attr('fill', 'orange');
+              })
+              .on('mouseout', function(d, i) {
+                d3.select('circle.circle_' + i)
+                  .attr('fill', 'black');
+              });
 
   voronoiPaths.exit().remove();
 }
