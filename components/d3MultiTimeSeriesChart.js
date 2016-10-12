@@ -100,8 +100,11 @@ D3MultiTimeSeriesChart.prototype._drawAxis = function(svg, data) {
   var scales = this._scales(domains);
   var yaxisWrapper = d3.axisLeft(scales.y)
                        .tickSizeInner(-width)
+                       .tickPadding(7)
                        .ticks(Math.round(height / 40));
   var xaxisWrapper = d3.axisBottom(scales.x)
+                       .tickSizeInner(-height)
+                       .tickPadding(7)
                        .ticks(Math.min(Math.round(width / 40), domains.x[1]))
                        .tickFormat(d3.format('d'));
 
@@ -110,6 +113,9 @@ D3MultiTimeSeriesChart.prototype._drawAxis = function(svg, data) {
 
   svg.select('g.yaxisWrapper')
      .call(yaxisWrapper);
+
+  svg.selectAll('.tick line')
+     .style('opacity', 0.2);
 }
 
 D3MultiTimeSeriesChart.prototype._translate = function() {
