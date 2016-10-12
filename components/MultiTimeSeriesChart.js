@@ -17,18 +17,12 @@ var MultiTimeSeriesChart = React.createClass({
       width: this.props.width,
       height: this.props.height,
       margins: this.props.margins
-    }, this._getChartState());
+    }, this.props.data);
   },
 
   componentDidUpdate: function() {
     var el = ReactDOM.findDOMNode(this);
-    this.d3MultiTimeSeriesChart.update(el, this._getChartState());
-  },
-
-  _getChartState: function() {
-    return {
-      data: this.props.data
-    };
+    this.d3MultiTimeSeriesChart.update(el, this.props.data);
   },
 
   componentWillUnmount: function() {
