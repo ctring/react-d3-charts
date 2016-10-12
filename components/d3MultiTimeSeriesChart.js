@@ -219,7 +219,7 @@ D3MultiTimeSeriesChart.prototype._drawVoronoi = function(svg, data) {
               .style('pointer-events', 'all')
               .on('mouseover', function(d, i) {
                 d3.select('circle.circle_' + i)
-                  .attr('fill', 'orange');
+                  .attr('fill', 'red');
                 that._showToolTip(svg, scales.x(d.data[0]), scales.y(d.data[1]), d.data[1]);
               })
               .on('mouseout', function(d, i) {
