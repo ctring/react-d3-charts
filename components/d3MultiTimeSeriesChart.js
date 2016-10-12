@@ -1,25 +1,41 @@
 var d3 = require('d3');
-var d3MultiTimeSeriesChart = {
-  _pointRadius: 3,
-  _tooltipWidth: 50,
-  _tooltipHeight: 30
+
+/**
+Example data:
+{
+  series: [{ values: [0.10, 0.15, 0.10, 0.16, 0.11, 0.20, 0.20, 0.21, 0.22, 0.20, 0.16, 0.14, 0.11, 0.10, 0.09, 0.07, 0.09, 0.06, 0.04],
+             color: 'red'
+           },
+           { values:[0.03, 0.07, 0.08, 0.09, 0.10, 0.11, 0.10, 0.10, 0.07, 0.05, 0.04, 0.03, 0.02, 0.01, 0.0],
+             color: 'blue'
+           }],
+
+  warpingPath: [[18, 14], [17, 13], [16, 12], [15, 11], [14, 10], [13, 9], [12, 8], [11, 7], [10, 6], [9, 5], [8, 4], [7, 3], [6, 2], [5, 1], [4, 1], [3, 1], [2, 1], [1, 1], [0, 0]]
+},
+
+*/
+
+var D3MultiTimeSeriesChart = function() {
+  this._pointRadius = 3;
+  this._tooltipWidth = 50;
+  this._tooltipHeight = 30;
 };
 
-d3MultiTimeSeriesChart.create = function(el, props, state) {
+D3MultiTimeSeriesChart.prototype.create = function(el, props, state) {
   this.props = props;
 
   var width = props.width;
   var height = props.height;
-  var margin = props.margin;
+  var margins = props.margins;
 
   var svg = d3.select(el).append('svg')
-              .attr('width', width + margin.left + margin.right)
-              .attr('height', height + margin.top + margin.bottom);
+              .attr('width', width + margins.left + margins.right)
+              .attr('height', height + margins.top + margins.bottom);
 
   svg.append('g').attr('class', 'xaxisWrapper')
-     .attr('transform', 'translate(' + margin.left + ', ' + (height + margin.top) + ')')
+     .attr('transform', 'translate(' + margins.left + ', ' + (height + margins.top) + ')')
   svg.append('g').attr('class', 'yaxisWrapper')
-     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+     .attr('transform', 'translate(' + margins.left + ',' + margins.top + ')')
   svg.append('g').attr('class', 'linesWrapper').attr('transform', this._translate());
   svg.append('g').attr('class', 'warpingPathWrapper').attr('transform', this._translate());
   svg.append('g').attr('class', 'pointsWrapper').attr('transform', this._translate());
@@ -43,13 +59,13 @@ d3MultiTimeSeriesChart.create = function(el, props, state) {
   this.update(el, state);
 };
 
-d3MultiTimeSeriesChart.update = function(el, state) {
+D3MultiTimeSeriesChart.prototype.update = function(el, state) {
   var svg = d3.select(el).select('svg'); 
   var series = state.data['series'] || [];
 
   var domains = { 
-    x: [0, Math.max.apply(null, series.map(function(s) {return s.data.length}))],
-    y: [0, Math.max.apply(null, series.map(function(s) {return Math.max.apply(null, s.data);}))]
+    x: [0, Math.max.apply(null, series.map(function(s) {return s.values.length}))],
+    y: [0, Math.max.apply(null, series.map(function(s) {return Math.max.apply(null, s.values);}))]
   };
 
   this._drawAxis(svg, domains);
@@ -59,11 +75,11 @@ d3MultiTimeSeriesChart.update = function(el, state) {
   this._drawVoronoi(svg, domains, state.data);
 };
 
-d3MultiTimeSeriesChart.destroy = function(el) {
+D3MultiTimeSeriesChart.prototype.destroy = function(el) {
   d3.select(el).select('svg').remove();
 }
 
-d3MultiTimeSeriesChart._scales = function(domains) {
+D3MultiTimeSeriesChart.prototype._scales = function(domains) {
 
   var x = d3.scaleLinear()
             .domain(domains.x)
@@ -72,11 +88,10 @@ d3MultiTimeSeriesChart._scales = function(domains) {
   var y = d3.scaleLinear()
             .domain(domains.y)
             .range([this.props.height, 0]);
-
   return {x: x, y: y};
 }
 
-d3MultiTimeSeriesChart._drawAxis = function(svg, domains) {
+D3MultiTimeSeriesChart.prototype._drawAxis = function(svg, domains) {
   var scales = this._scales(domains);
   var yaxisWrapper = d3.axisLeft(scales.y);
   var xaxisWrapper = d3.axisBottom(scales.x).ticks(domains.x[1]).tickFormat(d3.format('d'));
@@ -89,20 +104,20 @@ d3MultiTimeSeriesChart._drawAxis = function(svg, domains) {
      .call(yaxisWrapper);
 }
 
-d3MultiTimeSeriesChart._translate = function() {
-  return 'translate(' + this.props.margin.left + ',' + this.props.margin.top + ')';
+D3MultiTimeSeriesChart.prototype._translate = function() {
+  return 'translate(' + this.props.margins.left + ',' + this.props.margins.top + ')';
 };
 
-d3MultiTimeSeriesChart._extractRawPointCoords = function(series) {
+D3MultiTimeSeriesChart.prototype._extractRawPointCoords = function(series) {
   var attachIndex = function(d, i) { return [i, d]; }
-  var flatten = series.map(function(s) { return s.data.map(attachIndex); })
+  var flatten = series.map(function(s) { return s.values.map(attachIndex); })
                       .reduce(function(prev, cur) { 
                         return prev.concat(cur); 
                       }, []);
   return flatten;
 };
 
-d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
+D3MultiTimeSeriesChart.prototype._drawLines = function(svg, domains, data) {
   var scales = this._scales(domains);
   var series = data.series;
   var lineFunc = d3.line()
@@ -120,7 +135,7 @@ d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
   paths.enter()
        .append('path')
        .merge(paths)
-       .attr('d', function(d) { return lineFunc(d.data); })
+       .attr('d', function(d) { return lineFunc(d.values); })
        .attr('stroke', function(d) { return d.color || 'black'; })
        .attr('stroke-width', 1)
        .attr('fill', 'none')
@@ -130,7 +145,7 @@ d3MultiTimeSeriesChart._drawLines = function(svg, domains, data) {
 
 };
 
-d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
+D3MultiTimeSeriesChart.prototype._drawPoints = function(svg, domains, data) {
   var scales = this._scales(domains);
   var points = this._extractRawPointCoords(data['series']);
   var pointGroup = svg.select('g.pointsWrapper');
@@ -149,11 +164,7 @@ d3MultiTimeSeriesChart._drawPoints = function(svg, domains, data) {
   circles.exit().remove();
 };
 
-// d3MultiTimeSeriesChart._handleMouseOverPoint = function(d, i) {
-//   d3.select(this).attr('fill', 'orange');
-// };
-
-d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
+D3MultiTimeSeriesChart.prototype._drawWarpingPath = function(svg, domains, data) {
   var scales = this._scales(domains);
   var series = data['series'];
   var warpingPathData = data['warpingPath'] || [];
@@ -165,9 +176,9 @@ d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
        .append('line')
        .merge(lines)
        .attr('x1', function(d) { return scales.x(d[0]); })
-       .attr('y1', function(d) { return scales.y(series[0].data[d[0]]); })
+       .attr('y1', function(d) { return scales.y(series[0].values[d[0]]); })
        .attr('x2', function(d) { return scales.x(d[1]); })
-       .attr('y2', function(d) { return scales.y(series[1].data[d[1]]); })
+       .attr('y2', function(d) { return scales.y(series[1].values[d[1]]); })
        .attr('stroke-width', 1)
        .attr('stroke', 'gray')
        .attr('stroke-dasharray', '5, 5');
@@ -176,7 +187,7 @@ d3MultiTimeSeriesChart._drawWarpingPath = function(svg, domains, data) {
   lines.exit().remove();
 }
 
-d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
+D3MultiTimeSeriesChart.prototype._drawVoronoi = function(svg, domains, data) {
   var scales = this._scales(domains);
   // TODO: handle the case of duplicated points 
   var points = this._extractRawPointCoords(data['series']);
@@ -192,6 +203,7 @@ d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
   var polygons = voronoi(points).polygons();
 
   var voronoiPaths = voronoiGroup.selectAll('path').data(polygons);
+  var that = this;
   voronoiPaths.enter()
               .append('path')
               .merge(voronoiPaths)
@@ -204,18 +216,18 @@ d3MultiTimeSeriesChart._drawVoronoi = function(svg, domains, data) {
               .on('mouseover', function(d, i) {
                 d3.select('circle.circle_' + i)
                   .attr('fill', 'orange');
-                d3MultiTimeSeriesChart._showToolTip(svg, scales.x(d.data[0]), scales.y(d.data[1]), d.data[1]);
+                that._showToolTip(svg, scales.x(d.data[0]), scales.y(d.data[1]), d.data[1]);
               })
               .on('mouseout', function(d, i) {
                 d3.select('circle.circle_' + i)
                   .attr('fill', 'black');
-                d3MultiTimeSeriesChart._removeToolTip(svg);
+                that._removeToolTip(svg);
               });
 
   voronoiPaths.exit().remove();
 }
 
-d3MultiTimeSeriesChart._showToolTip = function(svg, x, y, text) {
+D3MultiTimeSeriesChart.prototype._showToolTip = function(svg, x, y, text) {
   var tooltipWrapper = svg.select('g.tooltipWrapper');
   var tooltip = tooltipWrapper.select('rect#tooltip');
   var tooltipText = tooltipWrapper.select('text#tooltipText');
@@ -233,8 +245,8 @@ d3MultiTimeSeriesChart._showToolTip = function(svg, x, y, text) {
                 .style('opacity', 0.8);
 }
 
-d3MultiTimeSeriesChart._removeToolTip = function(svg) {
+D3MultiTimeSeriesChart.prototype._removeToolTip = function(svg) {
   svg.select('g.tooltipWrapper').transition().style('opacity', 0);
 }
 
-module.exports = d3MultiTimeSeriesChart;
+module.exports = D3MultiTimeSeriesChart;
