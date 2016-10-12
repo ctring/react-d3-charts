@@ -232,14 +232,18 @@ D3MultiTimeSeriesChart.prototype._showToolTip = function(svg, x, y, text) {
   var tooltip = tooltipWrapper.select('rect#tooltip');
   var tooltipText = tooltipWrapper.select('text#tooltipText');
   
-  tooltip.attr('x', x - this._tooltipWidth / 2)
-         .attr('y', y + this._pointRadius)
-         .attr('width', this._tooltipWidth)
-         .attr('height', this._tooltipHeight);
-
   tooltipText.attr('x', x)
              .attr('y', y + this._pointRadius + this._tooltipHeight / 2)
              .text(text);
+
+  var textBBox = tooltipText.node().getBBox();
+  var tooltipWidth = textBBox.width + 20;
+  var tooltipHeight = textBBox.height + 10;
+
+  tooltip.attr('x', x - tooltipWidth / 2)
+         .attr('y', y + this._pointRadius)
+         .attr('width', tooltipWidth)
+         .attr('height', tooltipHeight);
 
   tooltipWrapper.transition()
                 .style('opacity', 0.8);

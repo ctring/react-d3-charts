@@ -1,4 +1,4 @@
-var D3MultiTimeSeriesChart = require('./d3MultiTimeSeriesChart');
+var D3MultiTimeSeriesChart = require('./D3MultiTimeSeriesChart');
 var React = require('react');
 var ReactDOM = require('react-dom');
 
