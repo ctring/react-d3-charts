@@ -96,7 +96,8 @@ D3MultiTimeSeriesChart.prototype._scales = function(domains) {
 D3MultiTimeSeriesChart.prototype._drawAxis = function(svg, data) {
   var domains = data.domains;
   var scales = this._scales(domains);
-  var yaxisWrapper = d3.axisLeft(scales.y);
+  var yaxisWrapper = d3.axisLeft(scales.y)
+                       .ticks(Math.round(this.props.height / 40));
   var xaxisWrapper = d3.axisBottom(scales.x)
                        .ticks(Math.min(Math.round(this.props.width / 40), domains.x[1]))
                        .tickFormat(d3.format('d'));
