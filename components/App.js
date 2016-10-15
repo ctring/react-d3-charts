@@ -10,6 +10,7 @@ var sampleData = [{
              color: 'blue'
            }],
   domains: {x: [0, 20], y: [0, 0.3]},
+  maxDomainY: 1,
   warpingPath: [[18, 14], [17, 13], [16, 12], [15, 11], [14, 10], [13, 9], [12, 8], [11, 7], [10, 6], [9, 5], [8, 4], [7, 3], [6, 2], [5, 1], [4, 1], [3, 1], [2, 1], [1, 1], [0, 0]]
 },
 {
@@ -20,6 +21,7 @@ var sampleData = [{
              color: 'blue'
            }],
   domains: {x: [0, 20], y: [0, 0.3]},
+  maxDomainY: 1,
   warpingPath: [[18, 14], [17, 13], [16, 12], [15, 11], [14, 10], [13, 9], [12, 8], [11, 7], [10, 6], [9, 5], [8, 4], [7, 3], [6, 2], [5, 1], [4, 1], [3, 1], [2, 1], [1, 1], [0, 0]]
 },
 {
@@ -30,6 +32,7 @@ var sampleData = [{
              color: 'blue'
            }],
   domains: {x: [0, 20], y: [0, 0.3]},
+  maxDomainY: 1,
   warpingPath: [[18, 14], [17, 13], [16, 12], [15, 11], [14, 10], [13, 9], [12, 8], [11, 7], [10, 6], [9, 5], [8, 4], [7, 3], [6, 2], [5, 1], [4, 1], [3, 1], [2, 1], [1, 1], [0, 0]]
 }
 ,
@@ -37,12 +40,13 @@ var sampleData = [{
   series: [{ values: [[0, 100], [1, 150], [2, 100], [3, 160], [4, 110], [5, 200], [6, 200], [7, 210], [8, 220], [9, 200], [10, 160], [11, 140]] },
            { values: [[0, 30], [1, 60], [2, 30], [3, 90], [4, 30], [5, 70], [6, 80], [7, 90], [8, 100], [9, 110], [10, 100], [11, 100], [12, 70], [13, 50], [14, 40], [15, 30], [16, 20], [17, 10], [18, 0]]}],
   domains: {x: [0, 20], y: [0, 500]},
-
+  maxDomainY: 500,
   warpingPath: [[11, 18], [10, 17], [9, 16], [8, 15], [7, 14], [6, 13], [5, 12], [4, 11], [3, 10], [2, 9], [1, 8], [1, 7], [1, 6], [1, 5], [1, 4], [1, 3], [1, 2], [1, 1], [0, 0]]
 },
 {
   series: [{ values: [[0, 1], [1, 2] ,[2, 3], [3, 4]], color: 'red'}],
   domains: {x: [0, 5], y: [0, 6]},
+  maxDomainY: 10
 }];
 
 var App = React.createClass({
@@ -62,9 +66,12 @@ var App = React.createClass({
                                                   data={this.state.data}
                                                 /> : null;
     var timeSeriesDifferenceChart = this.state.show ? <TimeSeriesDifferenceChart
-                                                        width={500}
+                                                        width={100}
                                                         height={250}
                                                         margins={{left: 30, right: 20, top: 10, bottom: 20}}
+                                                        strokeWidth={2}
+                                                        color={'blue'}
+                                                        data={this.state.data}
                                                       /> : null;
     return (
       <div className="App">
