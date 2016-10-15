@@ -1,4 +1,5 @@
 var MultiTimeSeriesChart = require('./MultiTimeSeriesChart');
+var TimeSeriesDifferenceChart = require('./TimeSeriesDifferenceChart');
 var React = require('react');
 
 var sampleData = [{
@@ -54,15 +55,21 @@ var App = React.createClass({
   },
 
   render: function() {
-    var chart = this.state.show ? <MultiTimeSeriesChart
-                                    width={500}
-                                    height={250}
-                                    margins={{left: 30, right: 20, top: 10, bottom: 20}}
-                                    data={this.state.data}
-                                  /> : null;
+    var multiTimeSeriesChart = this.state.show ? <MultiTimeSeriesChart
+                                                  width={500}
+                                                  height={250}
+                                                  margins={{left: 30, right: 20, top: 10, bottom: 20}}
+                                                  data={this.state.data}
+                                                /> : null;
+    var timeSeriesDifferenceChart = this.state.show ? <TimeSeriesDifferenceChart
+                                                        width={500}
+                                                        height={250}
+                                                        margins={{left: 30, right: 20, top: 10, bottom: 20}}
+                                                      /> : null;
     return (
       <div className="App">
-        {chart}
+        {multiTimeSeriesChart}
+        {timeSeriesDifferenceChart}
         <button onClick={this._updateChart}>Update</button>
         <button onClick={this._removeChart}>Remove</button>
         <button onClick={this._showChart}>Show</button>

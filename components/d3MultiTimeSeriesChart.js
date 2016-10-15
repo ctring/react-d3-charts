@@ -1,4 +1,5 @@
 var d3 = require('d3');
+var D3BaseChart = require('./D3BaseChart');
 
 /**
 Example props:
@@ -26,6 +27,9 @@ Example data:
 var D3MultiTimeSeriesChart = function() {
   this._pointRadius = 2;
 };
+
+D3MultiTimeSeriesChart.prototype = new D3BaseChart;
+D3MultiTimeSeriesChart.prototype.constructor = D3MultiTimeSeriesChart;
 
 // Append a new chart within a given DOM element. The props and data used 
 // to drawn the chart are kept inside the current object. 
@@ -92,19 +96,7 @@ D3MultiTimeSeriesChart.prototype.update = function(el, data) {
 // Remove the current chart
 D3MultiTimeSeriesChart.prototype.destroy = function(el) {
   d3.select(el).select('svg.multi-time-series-chart').remove();
-}
-
-// Return the scales with given domains
-D3MultiTimeSeriesChart.prototype._scales = function(domains) {
-  var x = d3.scaleLinear()
-            .domain(domains.x)
-            .range([0, this.props.width]);
-
-  var y = d3.scaleLinear()
-            .domain(domains.y)
-            .range([this.props.height, 0]);
-  return {x: x, y: y};
-}
+};
 
 // Draw axes
 D3MultiTimeSeriesChart.prototype._drawAxis = function(svg, data) {
@@ -135,11 +127,6 @@ D3MultiTimeSeriesChart.prototype._drawAxis = function(svg, data) {
   // Set a low opacity of the tick lines so that it won't obscure the content.
   svg.selectAll('.tick line')
      .style('opacity', 0.2);
-}
-
-// Return a string used in translating a group to the main area
-D3MultiTimeSeriesChart.prototype._translate = function() {
-  return 'translate(' + this.props.margins.left + ',' + this.props.margins.top + ')';
 };
 
 // Return a list of points which is a merge of all series in a list of series.
@@ -220,7 +207,7 @@ D3MultiTimeSeriesChart.prototype._drawWarpingPath = function(svg, data) {
 
   // exit
   lines.exit().remove();
-}
+};
 
 // Draw the invisible Voronoi diagram to assist user experience
 D3MultiTimeSeriesChart.prototype._drawVoronoi = function(svg, data) {
@@ -262,7 +249,7 @@ D3MultiTimeSeriesChart.prototype._drawVoronoi = function(svg, data) {
               });
 
   voronoiPaths.exit().remove();
-}
+};
 
 D3MultiTimeSeriesChart.prototype._showToolTip = function(svg, x, y, text) {
   var tooltipWrapper = svg.select('g.tooltipWrapper');
@@ -288,10 +275,10 @@ D3MultiTimeSeriesChart.prototype._showToolTip = function(svg, x, y, text) {
 
   tooltipWrapper.transition()
                 .style('opacity', 0.8);
-}
+};
 
 D3MultiTimeSeriesChart.prototype._removeToolTip = function(svg) {
   svg.select('g.tooltipWrapper').transition().style('opacity', 0);
-}
+};
 
 module.exports = D3MultiTimeSeriesChart;
