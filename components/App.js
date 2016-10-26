@@ -1,5 +1,6 @@
 var MultiTimeSeriesChart = require('./MultiTimeSeriesChart');
 var TimeSeriesDifferenceChart = require('./TimeSeriesDifferenceChart');
+var RadarChart = require('./RadarChart');
 var React = require('react');
 
 var sampleData = [{
@@ -73,10 +74,18 @@ var App = React.createClass({
                                                         color={'blue'}
                                                         data={this.state.data}
                                                       /> : null;
+    var radarChart = this.state.show && <RadarChart
+                                          width={500}
+                                          height={300}
+                                          data={this.state.data}
+                                          margins={{left: 30, right: 20, top: 30, bottom: 30}}
+                                        />
+
     return (
       <div className="App">
         {multiTimeSeriesChart}
         {timeSeriesDifferenceChart}
+        {radarChart}
         <button onClick={this._updateChart}>Update</button>
         <button onClick={this._removeChart}>Remove</button>
         <button onClick={this._showChart}>Show</button>

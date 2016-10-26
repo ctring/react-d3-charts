@@ -24,7 +24,6 @@ Example data:
 
 // Object constructor
 var D3TimeSeriesDifferenceChart = function() {
-  this._pointRadius = 2;
 };
 
 D3TimeSeriesDifferenceChart.prototype = new D3BaseChart;
