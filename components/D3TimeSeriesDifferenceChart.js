@@ -87,7 +87,7 @@ D3TimeSeriesDifferenceChart.prototype._drawBars = function(svg, data) {
     x: [0, diff.length - 1],
     y: [-data.maxDomainY, data.maxDomainY]
   };
-  console.log(diff);
+
   var scales = this._scales(domains);
   var series = data.series;
   var strokeWidth = this.props.strokeWidth || 1;
