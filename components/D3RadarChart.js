@@ -138,10 +138,14 @@ D3RadarChart.prototype._drawRadialAxis = function(svg, data) {
   var width = this.props.width;
   var center = this._center();
   var maxRadius = this._maxRadius();
-  var tickNum = Math.min(32, data.domains.x[1]);
   var that = this;
   var scales = this._polarScales(data.domains);
   var axesGroup = svg.select('g.radial-axes')
+
+  var ticks = scales.theta.ticks(Math.min(32, data.domains.x[1]));
+  var tickFormat = scales.theta.tickFormat(Math.min(32, data.domains.x[1]), 'd');
+  ticks = ticks.map(tickFormat);
+  var tickNum = ticks.length;
 
   var angles = [];
   for (var i = 0; i < tickNum; i++) {
@@ -159,9 +163,7 @@ D3RadarChart.prototype._drawRadialAxis = function(svg, data) {
        .attr('stroke-width', 1);
   lines.exit().remove();
 
-  var ticks = scales.theta.ticks(tickNum);
-  var tickFormat = scales.theta.tickFormat(tickNum, 'd');
-  ticks = ticks.map(tickFormat);
+
 
   var padding = 14;
   var texts = axesGroup.selectAll('text').data(angles);
