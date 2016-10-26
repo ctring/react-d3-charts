@@ -12,7 +12,8 @@ Example props:
 Example data:
 {
   series: [{ values: [[0, 0.1], [1, 0.15], [2, 0.1], [3, 0.16], [4, 0.11], [5, 0.2], [6, 0.2], [7, 0.21], [8, 0.22], [9, 0.2], [10, 0.16], [11, 0.14], [12, 0.11], [13, 0.1], [14, 0.09], [15, 0.07], [16, 0.09], [17, 0.06], [18, 0.04]],
-             color: 'red'
+             color: 'red',
+             strokeWidth: 3
            },
            { values: [[0, 0.03], [1, 0.07], [2, 0.08], [3, 0.09], [4, 0.1], [5, 0.11], [6, 0.1], [7, 0.1], [8, 0.07], [9, 0.05], [10, 0.04], [11, 0.03], [12, 0.02], [13, 0.01], [14, 0.0]],
              color: 'blue'
@@ -55,11 +56,35 @@ D3MultiTimeSeriesChart.prototype.create = function(el, props, data) {
   svg.append('g').classed('yaxisWrapper', true)
      .attr('transform', 'translate(' + margins.left + ',' + margins.top + ')')
 
+  // Clip everything that is out of the main view
+  svg.append('clipPath').attr('id', 'mainClip')
+     .append('rect')
+     .attr('x', 0)
+     .attr('y', 0)
+     .attr('width', width)
+     .attr('height', height);
+
   // Other groups are translated to the main area.
-  svg.append('g').classed('linesWrapper', true).attr('transform', this._translate());
-  svg.append('g').classed('warpingPathWrapper', true).attr('transform', this._translate());
-  svg.append('g').classed('pointsWrapper', true).attr('transform', this._translate());
-  svg.append('g').classed('voronoiWrapper', true).attr('transform', this._translate());
+  svg.append('g')
+     .classed('linesWrapper', true)
+     .attr('transform', this._translate())
+     .attr('clip-path', 'url(#mainClip)');
+
+  svg.append('g')
+     .classed('warpingPathWrapper', true)
+     .attr('transform', this._translate())
+     .attr('clip-path', 'url(#mainClip)');
+
+  svg.append('g')
+     .classed('pointsWrapper', true)
+     .attr('transform', this._translate())
+     .attr('clip-path', 'url(#mainClip)');
+
+  svg.append('g')
+     .classed('voronoiWrapper', true)
+     .attr('transform', this._translate())
+     .attr('clip-path', 'url(#mainClip)');
+
   var tooltipWrapper = svg.append('g').classed('tooltipWrapper', true).attr('transform', this._translate())
 
   // Tooltip is hidden initially
@@ -96,7 +121,7 @@ D3MultiTimeSeriesChart.prototype.update = function(el, data) {
 // Remove the current chart
 D3MultiTimeSeriesChart.prototype.destroy = function(el) {
   d3.select(el).select('svg.multi-time-series-chart').remove();
-};
+}
 
 // Draw axes
 D3MultiTimeSeriesChart.prototype._drawAxis = function(svg, data) {
@@ -127,7 +152,7 @@ D3MultiTimeSeriesChart.prototype._drawAxis = function(svg, data) {
   // Set a low opacity of the tick lines so that it won't obscure the content.
   svg.selectAll('.tick line')
      .style('opacity', 0.2);
-};
+}
 
 // Return a list of points which is a merge of all series in a list of series.
 D3MultiTimeSeriesChart.prototype._extractRawPointCoords = function(series) {
@@ -157,7 +182,7 @@ D3MultiTimeSeriesChart.prototype._drawLines = function(svg, data) {
        .merge(paths)
        .attr('d', function(d) { return lineFunc(d.values); })
        .attr('stroke', function(d) { return d.color || 'black'; })
-       .attr('stroke-width', strokeWidth)
+       .attr('stroke-width', function(d) { return d.strokeWidth || strokeWidth })
        .attr('fill', 'none');
        
   // exit
@@ -207,7 +232,7 @@ D3MultiTimeSeriesChart.prototype._drawWarpingPath = function(svg, data) {
 
   // exit
   lines.exit().remove();
-};
+}
 
 // Draw the invisible Voronoi diagram to assist user experience
 D3MultiTimeSeriesChart.prototype._drawVoronoi = function(svg, data) {
@@ -249,7 +274,7 @@ D3MultiTimeSeriesChart.prototype._drawVoronoi = function(svg, data) {
               });
 
   voronoiPaths.exit().remove();
-};
+}
 
 D3MultiTimeSeriesChart.prototype._showToolTip = function(svg, x, y, text) {
   var tooltipWrapper = svg.select('g.tooltipWrapper');
@@ -275,10 +300,10 @@ D3MultiTimeSeriesChart.prototype._showToolTip = function(svg, x, y, text) {
 
   tooltipWrapper.transition()
                 .style('opacity', 0.8);
-};
+}
 
 D3MultiTimeSeriesChart.prototype._removeToolTip = function(svg) {
   svg.select('g.tooltipWrapper').transition().style('opacity', 0);
-};
+}
 
 module.exports = D3MultiTimeSeriesChart;
